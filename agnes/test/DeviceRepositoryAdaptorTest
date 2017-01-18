@@ -1,8 +1,8 @@
 require("/modules/framr/Framr").init(this, {classPath: "./modules/"})
 
-import("devices.DeviceFactory")
+import("devicemodels.DeviceFactory")
 import("agnes.DeviceRepositoryAdaptor")
-import("devices.Device")
+import("devicemodels.Device")
 
 var adaptor = new agnes.DeviceRepositoryAdaptor()
 
