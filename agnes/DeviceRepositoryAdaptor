@@ -1,6 +1,6 @@
 import("framr.AbstractRepositoryAdaptor")
-import("devices.Device")
-import("devices.Location")
+import("devicemodels.Device")
+import("devicemodels.Location")
 
 var DeviceRepositoryAdaptor = Class(AbstractRepositoryAdaptor, {
   constructor: function(config) {
@@ -89,7 +89,7 @@ var DeviceRepositoryAdaptor = Class(AbstractRepositoryAdaptor, {
     try {
       this.update(device)
     } catch(e) {
-      if (e.errorCode == "INVALID_DEVICE") this.create(device); // DUPLICATE_DEVICE
+      if (e.errorCode == "DEVICE_NOT_FOUND") this.create(device); // DUPLICATE_DEVICE // INVALID_DEVICE
       else throw(e)
     }
   },
