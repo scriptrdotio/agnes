@@ -14,39 +14,9 @@ var DeviceRepositoryAdaptor = Class(AbstractRepositoryAdaptor, {
         logger.error(_errText)
 	    throw(_errText)
     }
-    var obj = {}
-    // copy model to new object
-    var model = device.serialize()	
-
-    // copy model to new object and derive schema
-    for (var k in model) {
-      // Derive schema from Javascript types
-      if (typeof model[k] == "string") {
-        obj[k]=model[k]
-        if (model[k].length>250) schema[k+".apsdb.fieldType"] = "text"
-      } else if (typeof model[k] == "number") {
-        obj[k]=model[k]
-        obj[k+".apsdb.fieldType"] = "numeric" 
-      } else if (typeof model[k] == "boolean") {
-        obj[k]=model[k]
-        obj[k+".apsdb.fieldType"] = "string" 
-      } else if (typeof model[k] == "object") {
-        if (model[k] instanceof Location) {
-          obj[k+".apsdb.fieldType"] = "geospatial" 
-          obj[k] = model[k].toString()
-        } else if (model[k] instanceof Date) {
-          obj[k+".apsdb.fieldType"] = "date" 
-          // yyyy-MM-dd'T'HH:mm:ssZ (e.g. 2012-04-13T13:01:02+0000)
-          var d = model[k].getFullYear()+"-"+(model[k].getMonth()+1)+"-"+model[k].getDate()+"T"
-          			+model[k].getHours()+":"+model[k].getMinutes()+":"+model[k].getSeconds()+"+0000"
-		  obj[k] = d
-        }
-      }
-    }
-    // Install password, this is a problem with the current Agnes API
-    obj.password = "!@#$%^&*()"
+    
+    var obj = this.prepareStructureToSave(device, update);
     obj["apsdb.update"]= update
-
     var response = apsdb.callApi("SaveDevice", obj, null)
     this._logText("SaveDevice", obj, response)
     
@@ -69,6 +39,50 @@ var DeviceRepositoryAdaptor = Class(AbstractRepositoryAdaptor, {
     var t = dateStr[1].split(":")
     return new Date(d[0], d[1], d[2], t[0], t[1], t[2].split("+")[0])
     
+  },
+  
+  /**
+   * This method can be partially or totally overriden by subclasses in order to add specific logic.
+   * Its purpose it to prepare the data structure that will be persisted in the device repository, it is invoked
+   * by _saveDevice()
+   * @param {Object} device: device data to persist
+   * @param {Boolean} update: if true, instructs scriptr.io to update the device
+   * @return {Object} the object structure that can be directly persisted into the device repository
+   */
+  prepareStructureToSave: function(device, update) {
+    
+    var obj = {}
+    // copy model to new object
+    var model = device.serialize()	
+
+    // copy model to new object and derive schema
+    for (var k in model) {
+      // Derive schema from Javascript types
+      if (typeof model[k] == "string") {
+        obj[k]=model[k]
+        if (model[k].length>250) obj[k+".apsdb.fieldType"] = "text"
+      } else if (typeof model[k] == "number") {
+        obj[k]=model[k]
+        obj[k+".apsdb.fieldType"] = "numeric" 
+      } else if (typeof model[k] == "boolean") {
+        obj[k]=model[k]
+        obj[k+".apsdb.fieldType"] = "string" 
+      } else if (typeof model[k] == "object") {
+        if (model[k] instanceof Location) {
+          obj[k+".apsdb.fieldType"] = "geospatial" 
+          obj[k] = model[k].toString()
+        } else if (model[k] instanceof Date) {
+          obj[k+".apsdb.fieldType"] = "date" 
+          // yyyy-MM-dd'T'HH:mm:ssZ (e.g. 2012-04-13T13:01:02+0000)
+          var d = model[k].getFullYear()+"-"+(model[k].getMonth()+1)+"-"+model[k].getDate()+"T"
+          			+model[k].getHours()+":"+model[k].getMinutes()+":"+model[k].getSeconds()+"+0000"
+		  obj[k] = d
+        }
+      }
+    }
+    // Install password, this is a problem with the current Agnes API
+    obj.password = "!@#$%^&*()"  
+	return obj;
   },
 
   create: function(device) {
@@ -93,6 +107,20 @@ var DeviceRepositoryAdaptor = Class(AbstractRepositoryAdaptor, {
       else throw(e)
     }
   },
+  
+  exists: function(id) {
+    
+    var request = {
+      id: id
+    }
+    
+    var responseObj = apsdb.callApi("GetDevice", request, null);
+    if (responseObj.metadata.status=="failure"){
+      return true;
+    }
+    
+    return false;
+  },
 
   load: function(id) {
     var request = {
@@ -100,6 +128,7 @@ var DeviceRepositoryAdaptor = Class(AbstractRepositoryAdaptor, {
      "apsdb.includeFieldType": "true"
     }
     var response = apsdb.callApi("GetDevice", request, null)
+    console.log(JSON.stringify(response));
     this._logText("GetDevice", request, response)
 
     if (response.metadata.status=="failure") throw (response.metadata);
