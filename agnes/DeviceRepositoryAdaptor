@@ -116,10 +116,10 @@ var DeviceRepositoryAdaptor = Class(AbstractRepositoryAdaptor, {
     
     var responseObj = apsdb.callApi("GetDevice", request, null);
     if (responseObj.metadata.status=="failure"){
-      return true;
+      return false;
     }
     
-    return false;
+    return true;
   },
 
   load: function(id) {
