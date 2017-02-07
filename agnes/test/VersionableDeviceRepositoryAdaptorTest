@@ -1,4 +1,4 @@
-require("/framr/Framr").init(this, {classPath: "./;"})
+require("/modules/framr/Framr").init(this, {classPath: "./modules/;"});
 
 import("devicemodels.Device")
 import("agnes.VersionableDeviceRepositoryAdaptor");
