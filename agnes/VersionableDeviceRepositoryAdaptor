@@ -41,18 +41,20 @@ var VersionableDeviceRepositoryAdaptor = Class(DeviceRepositoryAdaptor, {
   /**
    * Load historical data for the given device id
    * @param {String} id: the identifier of the device
+   * @param {String} fields: optional, comma separated list fo fields to return
    * @param {Number} pageNumber: optional, indicates the number of the page in case there is a large number of documents
+   * @param {Date} date: optional, 
    * @return {Array} list of device documents
    */
-  loadDataSeries: function(id, pageNumber) {
+  loadDataSeries: function(id, fields, pageNumber, date) {
     
     var requestObject = {
       
-      "query":'id = "'+ id + '"', 
+      "query":'id = "'+ id + '"', // + (date ? ' and apsdb.lastModifiedDate<date> > ' + date.toISOString() : ''), 
       "sort":"creationDate<date:DESC>", 
-      "fields":"*", 
+      "fields": fields ? fields  + ",lastModifiedDate": "*", 
       "includeFieldType":true
-    };
+    };   
     
     var responseObj = documents.query(requestObject);
     if (responseObj.metadata.status == "failure") {
