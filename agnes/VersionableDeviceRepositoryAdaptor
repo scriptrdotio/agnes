@@ -18,7 +18,7 @@ var VersionableDeviceRepositoryAdaptor = Class(DeviceRepositoryAdaptor, {
       // create a document based on the latest device state
       var objClone = JSON.parse(JSON.stringify(obj));
       delete objClone.password; // do not save the password in the document, as not part of the device state
-      var responseObj = apsdb.callApi("SaveDocument", objClone, null);
+      var responseObj = documents.save(objClone); //apsdb.callApi("SaveDocument", objClone, null);
       if (responseObj.metadata.status=="failure") {
 
         logger.error("VersionableDeviceRepositoryAdaptor failed to update device: " +  JSON.stringify(responseObj.metadata));

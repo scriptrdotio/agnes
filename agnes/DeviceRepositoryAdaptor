@@ -1,6 +1,8 @@
 import("framr.AbstractRepositoryAdaptor")
 import("devicemodels.Device")
 import("devicemodels.Location")
+var __document = require("document");
+var __device = require("device");
 
 var DeviceRepositoryAdaptor = Class(AbstractRepositoryAdaptor, {
   constructor: function(config) {
@@ -16,8 +18,8 @@ var DeviceRepositoryAdaptor = Class(AbstractRepositoryAdaptor, {
     }
     
     var obj = this.prepareStructureToSave(device, update);
-    obj["apsdb.update"]= update
-    var response = apsdb.callApi("SaveDevice", obj, null)
+   // obj["apsdb.update"]= update
+    var response = __device.save(obj) //apsdb.callApi("SaveDevice", obj, null)
     this._logText("SaveDevice", obj, response)
     
     return response
@@ -54,9 +56,31 @@ var DeviceRepositoryAdaptor = Class(AbstractRepositoryAdaptor, {
     var obj = {}
     // copy model to new object
     var model = device.serialize()	
-
+	// Remove the un updateable  
+    unUpdateable=[
+            "creator",
+            "creator.apsdb.fieldType",
+            "versionNumber",
+            "versionNumber.apsdb.fieldType",
+            "latest",
+            "latest.apsdb.fieldType",
+            "lastModifiedBy",
+            "lastModifiedBy.apsdb.fieldType",
+            "creationDate",
+            "creationDate.apsdb.fieldType",
+            "lastModifiedDate",
+            "lastModifiedDate.apsdb.fieldType"
+        ];
+    for (var k in model) {
+        
+        if(unUpdateable.find(function(key){return  key === k })){
+            delete model[k];
+        }
+    }
+    
     // copy model to new object and derive schema
     for (var k in model) {
+      
       // Derive schema from Javascript types
       if (typeof model[k] == "string") {
         obj[k]=model[k]
@@ -114,7 +138,7 @@ var DeviceRepositoryAdaptor = Class(AbstractRepositoryAdaptor, {
       id: id
     }
     
-    var responseObj = apsdb.callApi("GetDevice", request, null);
+    var responseObj = __device.get(request.id,false); //apsdb.callApi("GetDevice", request, null);
     if (responseObj.metadata.status=="failure"){
       return false;
     }
@@ -127,15 +151,15 @@ var DeviceRepositoryAdaptor = Class(AbstractRepositoryAdaptor, {
       id: id,
      "apsdb.includeFieldType": "true"
     }
-    var response = apsdb.callApi("GetDevice", request, null)
+    var response = __device.get(request.id,request["apsdb.includeFieldType"]) //apsdb.callApi("GetDevice", request, null)
     console.log(JSON.stringify(response));
     this._logText("GetDevice", request, response)
 
     if (response.metadata.status=="failure") throw (response.metadata);
     else {
-      var fieldTypes = response.result.device._type
-      var model = response.result.device
-      delete model._type
+      var fieldTypes = response.result["meta.types"]
+      var model = response.result
+      delete model["meta.types"]
 
       var device = {}
 	  // perform type casting based on agnes response 
@@ -155,9 +179,9 @@ var DeviceRepositoryAdaptor = Class(AbstractRepositoryAdaptor, {
     var id
     if (typeof device == "object") id = device.get("id"); else id=device
     
-    var response = apsdb.callApi("DeleteDevice", {
-      id: id
-    }, null)
+    var response = __device.delete(id); //apsdb.callApi("DeleteDevice", {
+     // id: id
+    //}, null)
 
     this._logText("DeleteDevice", {id: id}, response)
 
@@ -169,7 +193,7 @@ var DeviceRepositoryAdaptor = Class(AbstractRepositoryAdaptor, {
     var obj = {}
     // copy model to new object
     for (var k in options) {obj["apsdb."+k]=options[k]}
-    var response = apsdb.callApi("ListDevices", obj, null)
+    var response = __device.query({}); //apsdb.callApi("ListDevices", obj, null)
 
     this._logText("ListDevices", obj, response)
 
