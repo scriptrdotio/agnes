@@ -1,4 +1,4 @@
-require("/modules/framr/Framr").init(this, {classPath: "./modules/;"});
+require("m/framr/Framr").init(this, {classPath: "u/deviceModelEditor/;"});
 
 import("devicemodels.Device")
 import("agnes.VersionableDeviceRepositoryAdaptor");
@@ -26,7 +26,7 @@ try {
   //adaptor.load(id);
   //adaptor.query({attributes: "*"});  
   adaptor.loadDataSeries(id);
-  logger.log("works");
+  //logger.log("works");
 }catch(exception){
   return exception;
 }
