@@ -1,4 +1,4 @@
-require("/modules/framr/Framr").init(this, {classPath: "./modules/"})
+require("m/framr/Framr").init(this, {classPath: "u/deviceModelEditor/"})
 
 import("devicemodels.DeviceFactory")
 import("agnes.DeviceRepositoryAdaptor")
@@ -28,4 +28,4 @@ adaptor.load(id)
 adaptor.query({attributes: "*"})
 adaptor.delete(id)
 
-logger.log("works")
+//logger.log("works")
